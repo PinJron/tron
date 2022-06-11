@@ -172,12 +172,22 @@ void *thread_server(void *thread_data) {
     reciever(data);
 }
 
+void *getch_thread(void *ch) {
+    int* ch_get = (int *) ch;
+    while(1) {
+        *ch_get = getch();
+    }
+}
+
 // Для Димы:
 //      Процедура для "клиентского" потока
 int sender(struct server_data *data) {
+    int ch;
+    pthread_t getch_thread_;
+    pthread_create(&getch_thread_, NULL, getch_thread, &ch);
+
     while(data->work_flag)
     {
-        int ch = getch();
         if(ch != 'w' && ch != 'a' && ch != 's' && ch != 'd')
         {
             continue;
@@ -188,6 +198,7 @@ int sender(struct server_data *data) {
                (struct sockaddr *)&data->net->enemy_addr, sizeof(data->net->enemy_addr));
         data->manage_my_tron(data->my_tron);
     }
+    pthread_cancel(getch_thread_);
 
     return 0;
 }
@@ -450,7 +461,7 @@ int main(int argc, char *argv[]) {
         print(user_res_x, user_res_y, &info, ptr, clr_red, clr_blue, clr_prpl,
               &red_tron, &blue_tron, tail_x1, tail_x2, tail_y1, tail_y2);
 
-        // if (red_plr_key == 0 && blue_plr_key == 0) continue;
+        if (red_plr_key == 0 && blue_plr_key == 0) continue;
         usleep(62500);
 
         for (i = 0; i < 40; i++)
