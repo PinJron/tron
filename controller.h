@@ -65,4 +65,6 @@ struct server_data
 
 void create_socket(in_addr_t enemy_ip_addr, in_addr_t my_ip_addr, int port, struct network *net);
 
+u_int get_local_ip();
+
 #endif

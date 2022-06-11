@@ -3,69 +3,6 @@
 // In reciever() recv enemy's key
 // In main() our key press to enemy
 
-in_addr_t get_local_ip() {
-    FILE *f;
-    char line[100], *p, *c;
-
-    f = fopen("/proc/net/route", "r");
-
-    while (fgets(line, 100, f))
-    {
-        p = strtok(line, " \t");
-        c = strtok(NULL, " \t");
-
-        if (p != NULL && c != NULL)
-        {
-            // 0064A8C0 00000000
-            if (strcmp(c, "007AA8C0") == 0)
-            {
-                break;
-            }
-        }
-    }
-
-    int fm = AF_INET;
-    struct ifaddrs *ifaddr, *ifa;
-    int family, s;
-    char host[NI_MAXHOST];
-
-    if (getifaddrs(&ifaddr) == -1)
-    {
-        perror("getifaddrs");
-        exit(EXIT_FAILURE);
-    }
-
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
-    {
-        if (ifa->ifa_addr == NULL)
-        {
-            continue;
-        }
-
-        family = ifa->ifa_addr->sa_family;
-
-        if (strcmp(ifa->ifa_name, p) == 0)
-        {
-            if (family == fm)
-            {
-                s = getnameinfo(ifa->ifa_addr,
-                                (family == AF_INET) ? sizeof(struct sockaddr_in)
-                                                    : sizeof(struct sockaddr_in6),
-                                host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-
-                if (s != 0)
-                {
-                    exit(EXIT_FAILURE);
-                }
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
-
-    return inet_addr( host );
-}
-
 // Для Димы:
 //      Две процедуры отвечают за "парсинг" нажатия.
 //      Они вроде как одинаковые, так что можно одну оставить
@@ -84,7 +21,7 @@ void *manage_red_tron(void *thread_data) {
                 *data->key = *data->key_prev;
                 break;
             }
-            (*data->tail_y)++;
+            *(data->tail_y) = *(data->tail_y) + 1;
             for (int i = 0; i < 40; i++)
             {
                 data->tron->y[i] = *data->tail_y + 1 + i % 8;
@@ -99,7 +36,7 @@ void *manage_red_tron(void *thread_data) {
                 *data->key = *data->key_prev;
                 break;
             }
-            (*data->tail_x)++;
+            *(data->tail_x)= *(data->tail_x) + 1;
             for (int i = 0; i < 40; i++)
             {
                 data->tron->y[i] = *data->tail_y - 2 + i / 8;
@@ -114,7 +51,7 @@ void *manage_red_tron(void *thread_data) {
                 *data->key = *data->key_prev;
                 break;
             }
-            (*data->tail_y)--;
+           *(data->tail_y) = *(data->tail_y) - 1;
             for (int i = 0; i < 40; i++)
             {
                 data->tron->y[i] = *data->tail_y - 1 - i % 8;
@@ -129,7 +66,7 @@ void *manage_red_tron(void *thread_data) {
                 *data->key = *data->key_prev;
                 break;
             }
-            (*data->tail_x)--;
+            *(data->tail_x) = *(data->tail_x) - 1;
             for (int i = 0; i < 40; i++)
             {
                 data->tron->y[i] = *data->tail_y + 2 - i / 8;
@@ -262,6 +199,7 @@ void *thread_client(void *thread_data) {
     sender(data);
 }
 
+//        Отрисовка
 void print(int user_res_x, int user_res_y, struct fb_var_screeninfo *info, uint32_t *ptr,
            uint32_t red, uint32_t blue, uint32_t prpl, struct length *red_tron,
            struct length *blue_tron, unsigned int tail_x1, unsigned int tail_x2, unsigned int tail_y1, unsigned int tail_y2) {
@@ -371,6 +309,7 @@ int main(int argc, char *argv[]) {
     //      Схему отрисовки байков не менял.
     //      Только распихал данные по структурам.
     struct length red_tron, blue_tron;
+
     for (i = 0; i < 40; i++)
     {
         red_tron.y[i] = info.yres / 2 - user_res_y / 2 + 20 + i / 8;
@@ -395,6 +334,7 @@ int main(int argc, char *argv[]) {
             .net = &net,
             .work_flag = &work_flag,
     };
+
     server_data.my_tron = malloc(sizeof(struct tron));
     server_data.enemy_tron = malloc(sizeof(struct tron));
     pthread_mutex_init(&server_data.my_tron->mutex, NULL);
@@ -495,8 +435,7 @@ int main(int argc, char *argv[]) {
     //
     //      Текущая проблема: байки не ездят сами по себе
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
+    
     // Game loop
     while (work_flag)
     {
