@@ -450,7 +450,7 @@ int main(int argc, char *argv[]) {
         print(user_res_x, user_res_y, &info, ptr, clr_red, clr_blue, clr_prpl,
               &red_tron, &blue_tron, tail_x1, tail_x2, tail_y1, tail_y2);
 
-        if (red_plr_key == 0 && blue_plr_key == 0) continue;
+        // if (red_plr_key == 0 && blue_plr_key == 0) continue;
         usleep(62500);
 
         for (i = 0; i < 40; i++)
